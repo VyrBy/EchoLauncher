@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# VSCode
+.vscode/
+
+# Minecraft лаунчер директории
+launcher_minecraft/
+session/
+builds/
+*.jar
+
+# Windows
+Thumbs.db
