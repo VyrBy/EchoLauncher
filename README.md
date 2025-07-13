@@ -5,7 +5,7 @@ This is Minecraft Launcher for Authorization via ely.by.
 I recommend using it only for those who want to enter servers with the authorization system via ely.by.
 If you have any questions, don't be afraid to contact me on Discord (vyrby) or Telegram (@VyrBy)!
 
-P.S. P.S. My native language is Russian, but you can contact me in other languages!
+P.S. My native language is Russian, but you can contact me in other languages!
 
 
 ======================================================================================================
