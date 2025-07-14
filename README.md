@@ -16,6 +16,9 @@ My native language is Russian, but you can contact me in other languages!
 
 
 # RU/Русский
+
+## Что это?
+
 Это Майнкрафт Лаунчер для Авторизации через ely.by. 
 Рекомендую использовать только тем, кто хочет заходить на сервера с системой авторизации через ely.by.
 Если есть вопросы, не бойтесь обращаться ко мне в Discord (vyrby) или Telegram (@VyrBy)!
