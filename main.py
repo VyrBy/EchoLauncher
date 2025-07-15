@@ -22,8 +22,23 @@ BUILDS_FILE            = os.path.join(GAME_ROOT_DIR, "builds.json")             
 JAVA_CONFIG_FILE       = os.path.join(LAUNCHER_DIR, "java_config.json")           # конфиг жавы, там сохраняются указанные параметры
 #получаем путь к жаве
 def get_java_path(build_path):
-    # Путь к java.exe внутри runtime структуры
-    return os.path.join(build_path, "runtime", "java-runtime-gamma", "windows-x64", "java-runtime-gamma", "bin", "java.exe")
+    runtime_base = os.path.join(build_path, "runtime")
+    candidates = ["java-runtime-gamma", "java-runtime-delta"]
+
+    for candidate in candidates:
+        java_path = os.path.join(
+            runtime_base,
+            candidate,
+            "windows-x64",
+            candidate,
+            "bin",
+            "java.exe"
+        )
+        if os.path.isfile(java_path):
+            return java_path
+
+    # Если ни одна из версий не найдена
+    raise FileNotFoundError("Java runtime не найден ни в gamma, ни в delta")
 
 
 #создаём папки, если надо
@@ -231,19 +246,22 @@ def launch_selected_build():
     #Получаем путь к жаве через функцию в начале
     java_path =  get_java_path(build_path)
 
+    max_ram = max_ram_entry.get().strip()
+    min_ram = min_ram_entry.get().strip()
+
     #Параметры запуска
     options = {
         "username": sess["username"],                                        #ник
         "uuid": sess["uuid"],                                                #uuid
         "token": sess["accessToken"],                                        #токен
         "jvmArguments": [                                                    #аргументы жавы
-            f"-Xmx{ram_entry.get()}"
-            f"-Xms{ram_entry.get()}",
+        f"-Xmx{max_ram}",
+        f"-Xms{min_ram}",
             f"-javaagent:{AUTHLIB_INJECTOR_PATH}=https://authserver.ely.by"  #говорим жаве заходить через ely.by
         ] + jvm_extra_entry.get().split(),
         "launcherName": "EchoLauncher",                                      #говорим название нашего лаунчера
         "launcherVersion": "1.1",                                            #версию
-        "gameDirectory": os.path.join(BUILDS_DIR, build_name),               #директорию игры(сборки)
+        "gameDirectory": build_path,               #директорию игры(сборки)
         "executablePath": java_path,                                         #путь к жаве
     }
     #Если нету жавы, жалуемся
@@ -300,11 +318,19 @@ tk.Button(auth_f, text="Уже входил", command=refresh_session).pack()
 java_f = tk.Frame(root, bd=2, relief="solid", padx=10, pady=10)
 java_f.place(x=650, y=10, width=260, height=300)
 
-for lbl in ["Настройки Java", "ОЗУ (например 2G):"]:
+for lbl in ["Настройки Java", "Максимум ОЗУ (например 4G):"]:
     tk.Label(java_f, text=lbl, font=("Arial", 12)).pack(anchor="w")
-ram_entry = tk.Entry(java_f, width=20)
-ram_entry.insert(0, java_config.get("memory", "2G"))
-ram_entry.pack(anchor="w")
+
+max_ram_entry = tk.Entry(java_f, width=20)
+max_ram_entry.insert(0, java_config.get("max_memory", "4G"))
+max_ram_entry.pack(anchor="w")
+
+tk.Label(java_f, text="Минимум ОЗУ (например 2G):").pack(anchor="w", pady=(10, 0))
+
+min_ram_entry = tk.Entry(java_f, width=20)
+min_ram_entry.insert(0, java_config.get("min_memory", "2G"))
+min_ram_entry.pack(anchor="w")
+
 
 tk.Label(java_f, text="Доп. аргументы JVM:").pack(anchor="w", pady=(10,0))
 jvm_extra_entry = tk.Entry(java_f, width=30)
@@ -312,7 +338,8 @@ jvm_extra_entry.insert(0, java_config.get("args", ""))
 jvm_extra_entry.pack(anchor="w")
 
 def save_java_settings():
-    java_config["memory"] = ram_entry.get().strip()
+    java_config["max_memory"] = max_ram_entry.get().strip()
+    java_config["min_memory"] = min_ram_entry.get().strip()
     java_config["args"] = jvm_extra_entry.get().strip()
     save_java_config(java_config)
     messagebox.showinfo("Сохранено", "Параметры Java сохранены")
