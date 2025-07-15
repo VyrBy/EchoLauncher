@@ -5,6 +5,7 @@ from minecraft_launcher_lib import utils, install
 from minecraft_launcher_lib.fabric import install_fabric, get_all_minecraft_versions as get_fabric_versions
 import requests, json, uuid, os, subprocess, webbrowser
 from PIL import Image, ImageTk
+import sys
 from io import BytesIO
 
 
@@ -13,7 +14,12 @@ from io import BytesIO
 AUTH_URL               = "https://authserver.ely.by/auth/authenticate"            # url с аутентификацией
 REFRESH_URL            = "https://authserver.ely.by/auth/refresh"                 # хз, важная херня
 AUTHLIB_INJECTOR_PATH  = "authlib/authlib-injector-1.2.5.jar"                     # путь к AuthLib для ely.by
-LAUNCHER_DIR           = os.path.abspath(os.path.dirname(__file__))               # папка лаунчера
+
+if getattr(sys, 'frozen', False):
+    LAUNCHER_DIR = os.path.dirname(sys.executable)
+else:
+    LAUNCHER_DIR = os.path.abspath(os.path.dirname(__file__))
+
 GAME_ROOT_DIR          = os.path.join(LAUNCHER_DIR, "instances")                  # общая папка игры
 BUILDS_DIR             = os.path.join(GAME_ROOT_DIR, "builds")                    # сюда кладём сборки
 SESSION_DIR            = os.path.join(LAUNCHER_DIR, "session")                    # папка сессии
