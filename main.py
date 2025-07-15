@@ -2,57 +2,51 @@ import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import minecraft_launcher_lib
 from minecraft_launcher_lib import utils, install
-from minecraft_launcher_lib.forge import install_forge_version
 from minecraft_launcher_lib.fabric import install_fabric, get_all_minecraft_versions as get_fabric_versions
-import requests, json, uuid, os, subprocess, time, glob, webbrowser
+import requests, json, uuid, os, subprocess, webbrowser
 from PIL import Image, ImageTk
+from io import BytesIO
 
-"""
-EchoLauncher с поддержкой *сборок* (builds)
--------------------------------------------
 
-Главные изменения:
-* Каждая сборка хранится в каталоге ``launcher_minecraft/builds/<build_name>``.
-* В нижней панели теперь:
-  - Combobox для выбора сборки.
-  - «+» — создать сборку.
-  - «🗑» — удалить выбранную сборку.
-  - «📁» — открыть каталог сборки.
-  - «🚀 Запустить» — запустить Minecraft для активной сборки.
-* Метаданные сборок (`builds.json`) лежат рядом с `session.json`.
-"""
 
 # === Константы ===
-AUTH_URL               = "https://authserver.ely.by/auth/authenticate"
-REFRESH_URL            = "https://authserver.ely.by/auth/refresh"
-AUTHLIB_INJECTOR_PATH  = "authlib/authlib-injector-1.2.5.jar"
-LAUNCHER_DIR           = os.path.abspath(os.path.dirname(__file__))
-GAME_ROOT_DIR          = os.path.join(LAUNCHER_DIR, "instances")          # общая папка игры
+AUTH_URL               = "https://authserver.ely.by/auth/authenticate"            # url с аутентификацией
+REFRESH_URL            = "https://authserver.ely.by/auth/refresh"                 # хз, важная херня
+AUTHLIB_INJECTOR_PATH  = "authlib/authlib-injector-1.2.5.jar"                     # путь к AuthLib для ely.by
+LAUNCHER_DIR           = os.path.abspath(os.path.dirname(__file__))               # папка лаунчера
+GAME_ROOT_DIR          = os.path.join(LAUNCHER_DIR, "instances")                  # общая папка игры
 BUILDS_DIR             = os.path.join(GAME_ROOT_DIR, "builds")                    # сюда кладём сборки
-SESSION_DIR            = os.path.join(LAUNCHER_DIR, "session")
-SESSION_FILE           = os.path.join(SESSION_DIR, "session.json")
-BUILDS_FILE            = os.path.join(GAME_ROOT_DIR, "builds.json")
-JAVA_CONFIG_FILE       = os.path.join(LAUNCHER_DIR, "java_config.json")
-JAVA_PATH              = os.path.join(LAUNCHER_DIR, "java", "bin", "java.exe")
+SESSION_DIR            = os.path.join(LAUNCHER_DIR, "session")                    # папка сессии
+SESSION_FILE           = os.path.join(SESSION_DIR, "session.json")                # файл сессии
+BUILDS_FILE            = os.path.join(GAME_ROOT_DIR, "builds.json")               # файл сборок
+JAVA_CONFIG_FILE       = os.path.join(LAUNCHER_DIR, "java_config.json")           # конфиг жавы, там сохраняются указанные параметры
+#получаем путь к жаве
+def get_java_path(build_path):
+    # Путь к java.exe внутри runtime структуры
+    return os.path.join(build_path, "runtime", "java-runtime-gamma", "windows-x64", "java-runtime-gamma", "bin", "java.exe")
 
+
+#создаём папки, если надо
 os.makedirs(GAME_ROOT_DIR, exist_ok=True)
 os.makedirs(BUILDS_DIR, exist_ok=True)
 os.makedirs(SESSION_DIR, exist_ok=True)
 
 # === Доступные версии Minecraft ===
+#ванилла
 vanilla_versions   = utils.get_available_versions(GAME_ROOT_DIR)
 vanilla_version_ids = [v["id"] for v in vanilla_versions if v["type"] in ["release", "snapshot"]]
-
+#фарбик
 fabric_versions_raw = get_fabric_versions()
 fabric_version_ids  = [v["version"] for v in fabric_versions_raw]
 
 # === Java конфиг ===
+#загрузка конфига жавы
 def load_java_config():
     if not os.path.isfile(JAVA_CONFIG_FILE):
         return {"memory": "2G", "args": ""}
     with open(JAVA_CONFIG_FILE, encoding="utf-8") as f:
         return json.load(f)
-
+#сохранение конфига
 def save_java_config(cfg):
     with open(JAVA_CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
@@ -77,11 +71,11 @@ def fetch_forge_promos():
         print("[Forge] Не удалось получить promos:", e)
 
 # === Сессия ===
-
+#сохранение сессии
 def save_session(d):
     with open(SESSION_FILE, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=2)
-
+#загрузка сесии
 def load_session():
     if not os.path.isfile(SESSION_FILE):
         return None
@@ -89,17 +83,17 @@ def load_session():
         return json.load(f)
 
 # === Сборки ===
-
+#загрузка существующих сборок
 def load_builds():
     if not os.path.isfile(BUILDS_FILE):
         return []
     with open(BUILDS_FILE, encoding="utf-8") as f:
         return json.load(f)
-
+#сохранение сборки
 def save_builds(builds):
     with open(BUILDS_FILE, "w", encoding="utf-8") as f:
         json.dump(builds, f, ensure_ascii=False, indent=2)
-
+#создание сборки
 def add_build(name, mc_version, mc_type):
     builds = load_builds()
     if any(b["name"] == name for b in builds):
@@ -150,7 +144,7 @@ def refresh_session():
         messagebox.showerror("Ошибка", str(e))
 
 # === Установка версий (vanilla / fabric / forge) ===
-
+#убеждаемся в том, что сборка установлена
 def ensure_installed(build):
     mc_version = build["version"]
     mc_type = build["type"]
@@ -161,15 +155,17 @@ def ensure_installed(build):
     if not os.path.exists(versions_dir):
         os.makedirs(versions_dir)
 
-    # Проверка уже установленных версий
+    #когда версия уже установлена
     def version_installed(ver_id):
         return os.path.exists(os.path.join(versions_dir, ver_id))
 
+    #если ванилла
     if mc_type == "vanilla":
         version_id = mc_version
         if not version_installed(version_id):
             install.install_minecraft_version(mc_version, game_dir)
 
+    #если фабрик
     elif mc_type == "fabric":
         install.install_minecraft_version(mc_version, game_dir)
         install_fabric(mc_version, game_dir)
@@ -181,6 +177,7 @@ def ensure_installed(build):
         if not version_id:
             raise Exception("Не удалось найти установленную Fabric версию")
 
+    #если форж
     elif mc_type == "forge":
         # Получаем forge версию по mc_version
         forge_version = minecraft_launcher_lib.forge.find_forge_version(mc_version)
@@ -200,43 +197,79 @@ def ensure_installed(build):
                 break
         else:
             raise Exception("Forge установлен, но не удалось найти его ID")
-        return version_id
+    #возвращаем важную херобору, тронете - убью
+    return version_id
 
 
 # === Запуск ===
-
 def launch_selected_build():
+    #Загружаем сессию(авторизацию)
     sess = load_session()
     if not sess:
         return messagebox.showerror("Ошибка", "Сначала войдите")
+
+    #Получаем выбранную сборку
     build_name = builds_combobox.get()
     if not build_name:
         return messagebox.showwarning("Сборка", "Не выбрана сборка")
+
+    #Находим метаданные сборки
     build = next((b for b in load_builds() if b["name"] == build_name), None)
     if not build:
         return messagebox.showerror("Сборка", "Метаданные не найдены")
+
+    #Убеждаемся в установке версии, если нету - качаем
     try:
         version_id = ensure_installed(build)
+        if not version_id:
+            return messagebox.showerror("Ошибка", "Не удалось установить версию Minecraft для сборки")
     except Exception as e:
         return messagebox.showerror("Установка", str(e))
 
+    #Путь к сборке
+    build_path = os.path.join(BUILDS_DIR, build_name)
+    #Получаем путь к жаве через функцию в начале
+    java_path =  get_java_path(build_path)
+
+    #Параметры запуска
     options = {
-        "username": sess["username"],
-        "uuid": sess["uuid"],
-        "token": sess["accessToken"],
-        "jvmArguments": [
-            f"-Xmx{ram_entry.get()}",
+        "username": sess["username"],                                        #ник
+        "uuid": sess["uuid"],                                                #uuid
+        "token": sess["accessToken"],                                        #токен
+        "jvmArguments": [                                                    #аргументы жавы
+            f"-Xmx{ram_entry.get()}"
             f"-Xms{ram_entry.get()}",
-            f"-javaagent:{AUTHLIB_INJECTOR_PATH}=https://authserver.ely.by"
+            f"-javaagent:{AUTHLIB_INJECTOR_PATH}=https://authserver.ely.by"  #говорим жаве заходить через ely.by
         ] + jvm_extra_entry.get().split(),
-        "launcherName": "EchoLauncher", "launcherVersion": "1.0",
-        "gameDirectory": os.path.join(BUILDS_DIR, build_name),
+        "launcherName": "EchoLauncher",                                      #говорим название нашего лаунчера
+        "launcherVersion": "1.1",                                            #версию
+        "gameDirectory": os.path.join(BUILDS_DIR, build_name),               #директорию игры(сборки)
+        "executablePath": java_path,                                         #путь к жаве
     }
-    cmd = minecraft_launcher_lib.command.get_minecraft_command(version_id, os.path.join(BUILDS_DIR, build_name), options)
+    #Если нету жавы, жалуемся
+    if not os.path.isfile(java_path):
+        return messagebox.showerror("Java", f"Не найден файл Java: {java_path}")
+
+    cmd = minecraft_launcher_lib.command.get_minecraft_command(
+        version_id,
+        build_path,
+        options
+    )
     subprocess.Popen(cmd)
     messagebox.showinfo("Запуск", f"Сборка {build_name} успешно запущена!")
 
-# === GUI =================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
+# === GUI =================================================================================================================================================================================
 root = tk.Tk()
 root.title("EchoLauncher (builds)")
 icon = ImageTk.PhotoImage(file = "photos/launcher.ico")
@@ -284,7 +317,7 @@ def save_java_settings():
     save_java_config(java_config)
     messagebox.showinfo("Сохранено", "Параметры Java сохранены")
 
-tk.Button(java_f, text="💾 Сохранить", command=save_java_settings).pack(pady=10)
+tk.Button(java_f, text="Сохранить", command=save_java_settings).pack(pady=10)
 
 # Нижняя панель -----------------------------------------------------------
 bottom = tk.Frame(root, bd=2, relief="solid", padx=10, pady=10)
@@ -368,13 +401,18 @@ def open_build_folder():
         webbrowser.open(path)
 
 # Кнопки ------------------------------------------------------------------
-btn_new  = tk.Button(bottom, text="+", width=7, height=3, command=create_build_dialog)
-btn_del  = tk.Button(bottom, text="🗑", width=7, height=3, command=delete_build)
-btn_open = tk.Button(bottom, text="📁", width=7, height=3, command=open_build_folder)
+# иконки
+icon_new   = ImageTk.PhotoImage(Image.open("photos/sozdaty.png").resize((45, 45)))
+icon_del   = ImageTk.PhotoImage(Image.open("photos/udality.png").resize((45, 45)))
+icon_open  = ImageTk.PhotoImage(Image.open("photos/papka.png").resize((45, 45)))
+# сами кнопки
+btn_new  = tk.Button(bottom, image=icon_new,  command=create_build_dialog, width=50, height=50)
+btn_del  = tk.Button(bottom, image=icon_del,  command=delete_build,        width=50, height=50)
+btn_open = tk.Button(bottom, image=icon_open, command=open_build_folder,   width=50, height=50)
 for i,b in enumerate([btn_new, btn_del, btn_open], start=2):
     b.grid(row=0, column=i, padx=2)
 
-launch_btn = tk.Button(bottom, text="🚀 Запустить Minecraft", width=30, command=launch_selected_build, bg="#4CAF50", fg="white", font=("Arial",12,"bold"))
+launch_btn = tk.Button(bottom, text="🚀 Запустить Minecraft", width=30, command=launch_selected_build, bg="#4CAF50", fg="white", font=("Arial",14,"bold"))
 launch_btn.grid(row=0, column=5, padx=20)
 
 bottom.grid_columnconfigure(5, weight=1)
