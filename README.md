@@ -10,6 +10,11 @@ If you have any questions, don't be afraid to contact me on Discord (vyrby) or T
 ## Download
 To download release, follow this [link](https://github.com/VyrBy/EchoLauncher/releases/).
 
+## License
+This launcher is distributed under the [CC BY-NC 4.0 License](https://creativecommons.org/licenses/by-nc/4.0/).  
+You are allowed to modify and share it, but **commercial use is prohibited** without explicit permission.  
+Credit to the original author (VyrBy) is required.
+
 ### P.S.
 My native language is Russian, but you can contact me in other languages!
 
@@ -24,5 +29,11 @@ My native language is Russian, but you can contact me in other languages!
 
 ## Установка
 Для установки лаунчера, перейдите по этой [ссылке](https://github.com/VyrBy/EchoLauncher/releases).
+
+## Лицензия
+Лаунчер распространяется под лицензией [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ru).  
+Вы можете изменять и распространять лаунчер, **но не в коммерческих целях** и только с указанием автора (VyrBy).  
+Коммерческое использование — только с разрешения.
+
 ### P.S. 
 Мой родной язык Русский, но вы можете обращатся ко мне и на других языках!
