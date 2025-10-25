@@ -1,0 +1,111 @@
+﻿<Window x:Class="EchoLauncher.BuildsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Управление сборками" Height="500" Width="700"
+        WindowStartupLocation="CenterOwner"
+        Background="#FF1E1E1E">
+
+	<Window.Resources>
+		<!-- Зелёная цветовая схема -->
+        <SolidColorBrush x:Key="PrimaryGreenBrush" Color="#1B4D2B"/>
+        <SolidColorBrush x:Key="DarkGreenBrush" Color="#1B4D2B"/>
+		<SolidColorBrush x:Key="LightGreenBrush" Color="#FF2E8B2E"/>
+		<SolidColorBrush x:Key="AccentGreenBrush" Color="#FF20B020"/>
+
+		<!-- Стиль для ListView -->
+		<Style x:Key="GreenListView" TargetType="ListView">
+			<Setter Property="Background" Value="#FF252526"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+		</Style>
+
+		<!-- Стиль для заголовков колонок ListView -->
+		<Style x:Key="GreenGridViewColumnHeader" TargetType="GridViewColumnHeader">
+			<Setter Property="Background" Value="{StaticResource PrimaryGreenBrush}"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderBrush" Value="{StaticResource DarkGreenBrush}"/>
+			<Setter Property="BorderThickness" Value="0,0,1,1"/>
+			<Setter Property="Height" Value="30"/>
+		</Style>
+
+		<!-- Стиль для элементов ListView -->
+		<Style x:Key="GreenListViewItem" TargetType="ListViewItem">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style.Triggers>
+				<Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#141C17"/>
+				</Trigger>
+				<Trigger Property="IsSelected" Value="True">
+					<Setter Property="Background" Value="{StaticResource PrimaryGreenBrush}"/>
+                    <Setter Property="Foreground" Value="#141C17"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+	</Window.Resources>
+
+	<Grid Margin="15">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- Заголовок и кнопка добавления -->
+		<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+			<TextBlock Text="Сборки Minecraft" Foreground="White"
+                      FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+			<!-- Кнопка добавления -->
+			<Button Content="➕ Новая сборка" Margin="20,0,0,0"
+                   Click="AddBuildButton_Click" Background="{StaticResource PrimaryGreenBrush}"
+                   Foreground="White" Padding="10,5"/>
+		</StackPanel>
+
+		<!-- Список сборок -->
+		<ListView x:Name="BuildsListView" Grid.Row="1"
+                 Style="{StaticResource GreenListView}"
+                 ItemContainerStyle="{StaticResource GreenListViewItem}">
+			<ListView.View>
+				<GridView>
+					<GridViewColumn Header="Название" Width="150" DisplayMemberBinding="{Binding Name}">
+						<GridViewColumn.HeaderContainerStyle>
+							<Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource GreenGridViewColumnHeader}"/>
+						</GridViewColumn.HeaderContainerStyle>
+					</GridViewColumn>
+					<GridViewColumn Header="Версия" Width="100" DisplayMemberBinding="{Binding Version}">
+						<GridViewColumn.HeaderContainerStyle>
+							<Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource GreenGridViewColumnHeader}"/>
+						</GridViewColumn.HeaderContainerStyle>
+					</GridViewColumn>
+					<GridViewColumn Header="Тип" Width="100" DisplayMemberBinding="{Binding Type}">
+						<GridViewColumn.HeaderContainerStyle>
+							<Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource GreenGridViewColumnHeader}"/>
+						</GridViewColumn.HeaderContainerStyle>
+					</GridViewColumn>
+					<GridViewColumn Header="Создана" Width="120" DisplayMemberBinding="{Binding CreatedAt, StringFormat=dd.MM.yyyy}">
+						<GridViewColumn.HeaderContainerStyle>
+							<Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource GreenGridViewColumnHeader}"/>
+						</GridViewColumn.HeaderContainerStyle>
+					</GridViewColumn>
+				</GridView>
+			</ListView.View>
+		</ListView>
+
+		<!-- Кнопки управления -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Content="🔄 Обновить" Click="RefreshButton_Click"
+           Background="{StaticResource PrimaryGreenBrush}" Foreground="White" 
+           Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="📂 Открыть папку" Click="OpenFolderButton_Click"
+           Background="{StaticResource PrimaryGreenBrush}" Foreground="White" 
+           Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="🗑️ Удалить" Click="DeleteBuildButton_Click"
+           Background="#FFD13438" Foreground="White" Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="Закрыть" Click="CloseButton_Click"
+           Background="Transparent" Foreground="White" Padding="10,5"
+           BorderBrush="{StaticResource PrimaryGreenBrush}" BorderThickness="1"/>
+        </StackPanel>
+    </Grid>
+</Window>

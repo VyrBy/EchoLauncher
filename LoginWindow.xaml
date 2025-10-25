@@ -1,0 +1,52 @@
+<Window x:Class="EchoLauncher.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Вход в ely.by" Height="281" Width="350"
+        WindowStartupLocation="CenterOwner"
+        Background="#141C17"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Цветовая схема -->
+        <SolidColorBrush x:Key="PrimaryGreenBrush" Color="#1B4D2B"/>
+        <SolidColorBrush x:Key="DarkGreenBrush" Color="#FF0A5C0A"/>
+        <SolidColorBrush x:Key="ButtonInActive" Color="#3A4A3A"/>
+
+        <!-- Стиль для TextBox -->
+        <Style x:Key="GreenTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#FF3E3E42"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <!-- Стиль для PasswordBox -->
+        <Style x:Key="GreenPasswordBox" TargetType="PasswordBox">
+            <Setter Property="Background" Value="#FF3E3E42"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Вход в ely.by" Foreground="White" 
+                      FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Email или логин:" Foreground="White" Margin="0,0,0,5"/>
+            <TextBox x:Name="UsernameTextBox" Style="{StaticResource GreenTextBox}"/>
+
+            <TextBlock Text="Пароль:" Foreground="White" Margin="0,0,0,5"/>
+            <PasswordBox x:Name="PasswordBox" Style="{StaticResource GreenPasswordBox}"/>
+
+            <!-- Кнопка входа -->
+            <Button Content="Войти" Height="30" Background="{StaticResource PrimaryGreenBrush}" 
+                   Foreground="White" FontWeight="Bold" Click="LoginButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,79 @@
+<Window x:Class="EchoLauncher.AddBuildWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Новая сборка" Height="323" Width="400"
+        WindowStartupLocation="CenterOwner"
+        Background="#FF1E1E1E"
+        ResizeMode="NoResize">
+
+	<Window.Resources>
+		<!-- Зелёная цветовая схема -->
+		<SolidColorBrush x:Key="PrimaryGreenBrush" Color="#006400"/>
+		<SolidColorBrush x:Key="DarkGreenBrush" Color="#006400"/>
+		<SolidColorBrush x:Key="LightGreenBrush" Color="#006400"/>
+
+		<!-- Стиль для ComboBox -->
+		<Style x:Key="GreenComboBox" TargetType="ComboBox">
+			<Setter Property="Background" Value="#FF3E3E42"/>
+			<Setter Property="Foreground" Value="#FF3E3E42"/>
+			<Setter Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Height" Value="25"/>
+			<Setter Property="Margin" Value="0,0,0,15"/>
+		</Style>
+
+		<!-- Стиль для элементов ComboBox -->
+		<Style x:Key="GreenComboBoxItem" TargetType="ComboBoxItem">
+			<Setter Property="Background" Value="#FF3E3E42"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Style.Triggers>
+				<Trigger Property="IsHighlighted" Value="True">
+					<Setter Property="Background" Value="{StaticResource PrimaryGreenBrush}"/>
+					<Setter Property="Foreground" Value="White"/>
+				</Trigger>
+				<Trigger Property="IsSelected" Value="True">
+					<Setter Property="Background" Value="{StaticResource DarkGreenBrush}"/>
+					<Setter Property="Foreground" Value="White"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+
+		<!-- Стиль для TextBox -->
+		<Style x:Key="GreenTextBox" TargetType="TextBox">
+			<Setter Property="Background" Value="#FF3E3E42"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderBrush" Value="{StaticResource PrimaryGreenBrush}"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Height" Value="25"/>
+			<Setter Property="Margin" Value="0,0,0,15"/>
+		</Style>
+	</Window.Resources>
+
+	<Grid Margin="20">
+		<StackPanel>
+			<TextBlock Text="Создание новой сборки" Foreground="White"
+                      FontSize="16" FontWeight="Bold" Margin="0,0,0,20"/>
+
+			<TextBlock Text="Название сборки:" Foreground="White" Margin="0,0,0,5"/>
+			<TextBox x:Name="NameTextBox" Style="{StaticResource GreenTextBox}"/>
+
+			<TextBlock Text="Тип сборки:" Foreground="White" Margin="0,0,0,5"/>
+			<ComboBox x:Name="TypeComboBox" Style="{StaticResource GreenComboBox}"
+                     ItemContainerStyle="{StaticResource GreenComboBoxItem}"
+                     SelectionChanged="TypeComboBox_SelectionChanged" Text="Выберите сборку..." BorderBrush="{x:Null}">
+				<ComboBoxItem Content="Vanilla" Tag="vanilla"/>
+				<ComboBoxItem Content="Fabric" Tag="fabric"/>
+				<ComboBoxItem Content="Forge" Tag="forge"/>
+			</ComboBox>
+
+			<TextBlock Text="Версия Minecraft:" Foreground="White" Margin="0,0,0,5"/>
+			<ComboBox x:Name="VersionComboBox" Style="{StaticResource GreenComboBox}"
+                     ItemContainerStyle="{StaticResource GreenComboBoxItem}"/>
+
+			<!-- Кнопка создания - зелёная -->
+			<Button Content="Создать" Height="30" Background="{StaticResource PrimaryGreenBrush}"
+                   Foreground="White" FontWeight="Bold" Click="CreateButton_Click"/>
+		</StackPanel>
+	</Grid>
+</Window>

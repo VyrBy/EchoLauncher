@@ -1,0 +1,37 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+bin/
+obj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+obj/
+
+# User-specific files
+*.suo
+*.user
+*.userprefs
+
+# Build results
+build/
+bin/
+
+# Minecraft files
+instances/
+authlib/
+builds.json
+session.json
